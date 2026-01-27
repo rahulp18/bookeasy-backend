@@ -1,0 +1,23 @@
+package utils
+
+import (
+	"fmt"
+
+	"golang.org/x/crypto/bcrypt"
+)
+
+func HashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 12)
+	return string(bytes), err
+}
+
+func CheckPassword(hash, password string) bool {
+
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	if err != nil {
+		fmt.Println("Bcrypt error:", err)
+	} else {
+		fmt.Println("Password match successful!")
+	}
+	return err == nil
+}
