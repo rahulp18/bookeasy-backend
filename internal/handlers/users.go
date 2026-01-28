@@ -35,7 +35,7 @@ func UsersHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func Profile(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Context-Type", "application.json")
+
 	if http.MethodGet != r.Method {
 		http.Error(w, "Method not supported", http.StatusMethodNotAllowed)
 		return

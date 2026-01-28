@@ -4,9 +4,9 @@ import "time"
 
 type Show struct {
 	ID        string    `json:"id"`
-	Name      string    `json:"name"`
 	EventId   string    `json:"event_id"`
-	StartAt   time.Time `json:"start_at"`
-	EndAt     time.Time `json:"end_at"`
+	Venue     string    `json:"venue"`
+	StartTime time.Time `json:"start_time"`
+	EndTime   time.Time `json:"end_time"`
 	CreatedAt time.Time `json:"created_at"`
 }
