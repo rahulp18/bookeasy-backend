@@ -45,3 +45,12 @@ func GetUserByEmail(email string) (*models.User, error) {
 	}
 	return &user, nil
 }
+func GetUserById(id string) (*models.User, error) {
+	var user models.User
+	query := `SELECT id,name,email,password,created_at FROM users WHERE id=$1`
+	err := db.DB.QueryRow(query, id).Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
