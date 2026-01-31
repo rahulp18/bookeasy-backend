@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	"github.com/lib/pq"
+	"github.com/rahulp18/bookeasy-backend/internal/models"
 )
 
 type BookingRepository struct {
@@ -145,4 +146,84 @@ func (br *BookingRepository) ReleaseExpiredSeats(ctx context.Context) error {
 		return err
 	}
 	return tx.Commit()
+}
+func (br *BookingRepository) IsBookingPendingAndOwner(ctx context.Context, userID, bookingID string) (bool, error) {
+	var exists bool
+	err := br.db.QueryRowContext(ctx,
+		`SELECT EXISTS(
+			SELECT 1 FROM bookings
+			WHERE id=$1 AND user_id=$2 AND status='pending'
+		)`,
+		bookingID,
+		userID,
+	).Scan(&exists)
+	return exists, err
+}
+
+func (br *BookingRepository) GetBookingDetails(ctx context.Context, bookingID, userID string) (models.BookingDetails, error) {
+	var booking models.BookingDetails
+	err := br.db.QueryRowContext(ctx, `
+ SELECT
+    b.id,
+    b.status,
+    b.created_at,
+
+    s.id,
+    s.venue,
+    s.start_time,
+    s.end_time,
+
+    e.id,
+    e.title,
+    e.description,
+    e.duration_minutes
+FROM bookings b
+JOIN shows s ON b.show_id = s.id
+JOIN events e ON s.event_id = e.id
+WHERE b.id = $1 AND b.user_id = $2;
+	`, bookingID, userID).Scan(&booking)
+	if err != nil {
+		return models.BookingDetails{}, err
+	}
+	return booking, nil
+}
+
+func (br *BookingRepository) GetUserBookingSummery(ctx context.Context, userID string) ([]models.UserBookingSummary, error) {
+
+	query := `
+		SELECT
+			b.id AS booking_id,
+			b.status,
+			b.created_at,
+			e.title AS event_title,
+			s.venue,
+			s.start_time
+		FROM bookings b
+		JOIN shows s ON b.show_id = s.id
+		JOIN events e ON s.event_id = e.id
+		WHERE b.user_id = $1
+		ORDER BY b.created_at DESC
+	`
+	rows, err := br.db.QueryContext(ctx, query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var bookings []models.UserBookingSummary
+	for rows.Next() {
+		var b models.UserBookingSummary
+		err := rows.Scan(
+			&b.BookingID,
+			&b.Status,
+			&b.CreatedAt,
+			&b.EventTitle,
+			&b.Venue,
+			&b.StartTime,
+		)
+		if err != nil {
+			return nil, err
+		}
+		bookings = append(bookings, b)
+	}
+	return bookings, err
 }

@@ -23,5 +23,6 @@ func Register(mux *http.ServeMux) {
 	mux.HandleFunc("/seats", handlers.SeatsHandler)
 	mux.HandleFunc("/shows", handlers.ShowsHandler)
 	// BOOKING ROUTES
-	mux.Handle("/bookings", middleware.Auth(http.HandlerFunc(bookingHandler.CreateBooking)))
+	mux.Handle("/bookings", middleware.Auth(http.HandlerFunc(bookingHandler.HandleBookings)))
+	mux.Handle("/bookings/", middleware.Auth(http.HandlerFunc(bookingHandler.BookingActions)))
 }

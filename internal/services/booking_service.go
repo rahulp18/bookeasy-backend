@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/rahulp18/bookeasy-backend/internal/models"
 	"github.com/rahulp18/bookeasy-backend/internal/repository"
 )
 
@@ -35,4 +36,24 @@ func (bs *BookingService) CreateBooking(
 		return "", err
 	}
 	return bookingID, nil
+}
+
+func (bs *BookingService) ConfirmBooking(ctx context.Context, userID, bookingID string) error {
+	//   validate
+	ok, err := bs.bookingRepo.IsBookingPendingAndOwner(ctx, userID, bookingID)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return errors.New("Booking not found or already proceed")
+
+	}
+	return bs.bookingRepo.ConfirmBooking(ctx, bookingID)
+}
+
+func (bs *BookingService) GetBookingDetails(ctx context.Context, bookingID, userID string) (models.BookingDetails, error) {
+	return bs.bookingRepo.GetBookingDetails(ctx, bookingID, userID)
+}
+func (bs *BookingService) GetAllBookings(ctx context.Context, userID string) ([]models.UserBookingSummary, error) {
+	return bs.bookingRepo.GetUserBookingSummery(ctx, userID)
 }
