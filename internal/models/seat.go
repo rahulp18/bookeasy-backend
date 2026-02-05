@@ -12,3 +12,8 @@ type ShowSeatsResponse struct {
 	SeatNumber string `json:"seat_number"`
 	Status     string `json:"status"`
 }
+
+type SeedSeatRequest struct {
+	Rows        []string `json:"rows"`
+	SeatsPerRow int      `json:"seats_per_show"`
+}

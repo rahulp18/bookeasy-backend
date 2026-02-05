@@ -17,7 +17,15 @@ func Register(mux *http.ServeMux) {
 	seatRepository := repository.NewSeatRepository(db.DB)
 	seatService := services.NewSeatService(seatRepository)
 	seatHandler := handlers.NewSeatHandler(seatService)
-
+	eventRepository := repository.NewEventRepository(db.DB)
+	eventService := services.NewAdminEventService(eventRepository)
+	eventHandler := handlers.NewAdminEventHandler(eventService)
+	showsRepository := repository.NewShowRepository(db.DB)
+	showsService := services.NewAdminShowService(showsRepository)
+	showHandler := handlers.NewAdminShowHandler(showsService)
+	adminSeatSeedRepository := repository.NewSeatSeedRepository(db.DB)
+	seatSeedService := services.NewAdminSeatSeedService(adminSeatSeedRepository)
+	adminSeatSeedHandler := handlers.NewAdminSeatSeedHandler(seatSeedService)
 	mux.HandleFunc("/users", handlers.UsersHandler)
 	mux.Handle("/profile", middleware.Auth(http.HandlerFunc(handlers.Profile)))
 	mux.HandleFunc("/register", handlers.Register)
@@ -28,4 +36,9 @@ func Register(mux *http.ServeMux) {
 	// BOOKING ROUTES
 	mux.Handle("/bookings", middleware.Auth(http.HandlerFunc(bookingHandler.HandleBookings)))
 	mux.Handle("/bookings/", middleware.Auth(http.HandlerFunc(bookingHandler.BookingActions)))
+
+	mux.Handle("/admin/events", middleware.Auth(http.HandlerFunc(eventHandler.CreateEvent)))
+	mux.Handle("/admin/shows", middleware.Auth(http.HandlerFunc(showHandler.CreateShow)))
+	mux.HandleFunc("/admin/shows/", adminSeatSeedHandler.SeedShowSeats)
+
 }
