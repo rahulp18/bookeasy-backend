@@ -29,3 +29,32 @@ func (er *EventRepository) CreateEvent(ctx context.Context, e models.Event) (str
 	}
 	return id, nil
 }
+
+func (er *EventRepository) FetchAllEvents(ctx context.Context) ([]models.Event, error) {
+	query := `SELECT id,title,description,duration_minutes,created_at FROM events ORDER BY created_at DESC `
+	rows, err := er.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+	events := make([]models.Event, 0)
+	for rows.Next() {
+		var e models.Event
+		err := rows.Scan(
+			&e.ID,
+			&e.Title,
+			&e.Description,
+			&e.DurationMinutes,
+			&e.CreatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		events = append(events, e)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return events, nil
+}

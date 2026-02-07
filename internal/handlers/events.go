@@ -23,7 +23,7 @@ type CreateEventRequest struct {
 	DurationMinutes int    `json:"duration_minutes"`
 }
 
-func EventsHandler(w http.ResponseWriter, r *http.Request) {
+func (h *AdminEventHandler) EventActionHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		fmt.Fprint(w, "Get events request")
@@ -35,26 +35,39 @@ func EventsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *AdminEventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		return
+func (h *AdminEventHandler) HandleEvents(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		data, err := h.eventService.GetAllEvents(r.Context())
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		fmt.Println(data)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(data)
+	case http.MethodPost:
+		var input CreateEventRequest
+		if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+			http.Error(w, "invalid input", http.StatusBadRequest)
+			return
+		}
+		id, err := h.eventService.CreateEvent(r.Context(), models.Event{
+			Title:           input.Title,
+			Description:     input.Description,
+			DurationMinutes: input.DurationMinutes,
+		})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		json.NewEncoder(w).Encode(map[string]string{
+			"event_id": id,
+		})
+
+	default:
+		http.Error(w, "Method not supported", http.StatusMethodNotAllowed)
+
 	}
-	var input CreateEventRequest
-	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		http.Error(w, "invalid input", http.StatusBadRequest)
-		return
-	}
-	id, err := h.eventService.CreateEvent(r.Context(), models.Event{
-		Title:           input.Title,
-		Description:     input.Description,
-		DurationMinutes: input.DurationMinutes,
-	})
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	json.NewEncoder(w).Encode(map[string]string{
-		"event_id": id,
-	})
+
 }
