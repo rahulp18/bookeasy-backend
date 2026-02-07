@@ -25,7 +25,7 @@ func (h *AdminSeatSeedHandler) SeedShowSeats(w http.ResponseWriter, r *http.Requ
 	}
 	parts := strings.Split(r.URL.Path, "/")
 
-	if len(parts) < 5 {
+	if len(parts) < 3 {
 		http.Error(w, "Invalid URL", http.StatusBadRequest)
 		return
 	}

@@ -20,7 +20,7 @@ func NewSeatHandler(seatService *services.SeatService) *SeatHandler {
 }
 func (sh *SeatHandler) SeatIdHandler(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(r.URL.Path, "/")
-	if len(parts) < 4 {
+	if len(parts) < 2 {
 		http.Error(w, "Invalid URL", http.StatusBadRequest)
 		return
 	}

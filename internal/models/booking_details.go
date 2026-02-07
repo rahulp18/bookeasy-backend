@@ -29,6 +29,7 @@ type EventInfo struct {
 
 type SeatInfo struct {
 	ShowSeatID string `json:"show_seat_id"`
-	SeatRow    string `json:"seat_row"`
-	SeatNumber string `json:"seat_number"`
+	SeatID     string `json:"seat_id"`
+	SeatNo     string `json:"seat_no"`
+	RowLabel   string `json:"row_label"`
 }

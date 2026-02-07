@@ -162,29 +162,94 @@ func (br *BookingRepository) IsBookingPendingAndOwner(ctx context.Context, userI
 
 func (br *BookingRepository) GetBookingDetails(ctx context.Context, bookingID, userID string) (models.BookingDetails, error) {
 	var booking models.BookingDetails
+
+	// 1) Fetch booking + show + event (single row)
 	err := br.db.QueryRowContext(ctx, `
- SELECT
-    b.id,
-    b.status,
-    b.created_at,
+		SELECT
+			b.id,
+			b.status,
+			b.created_at,
 
-    s.id,
-    s.venue,
-    s.start_time,
-    s.end_time,
+			s.id,
+			s.venue,
+			s.start_time,
+			s.end_time,
 
-    e.id,
-    e.title,
-    e.description,
-    e.duration_minutes
-FROM bookings b
-JOIN shows s ON b.show_id = s.id
-JOIN events e ON s.event_id = e.id
-WHERE b.id = $1 AND b.user_id = $2;
-	`, bookingID, userID).Scan(&booking)
+			e.id,
+			e.title,
+			e.description,
+			e.duration_minutes
+		FROM bookings b
+		JOIN shows s ON b.show_id = s.id
+		JOIN events e ON s.event_id = e.id
+		WHERE b.id = $1 AND b.user_id = $2
+	`, bookingID, userID).Scan(
+		&booking.BookingID,
+		&booking.Status,
+		&booking.CreatedAt,
+
+		&booking.Show.ShowID,
+		&booking.Show.Venue,
+		&booking.Show.StartTime,
+		&booking.Show.EndTime,
+
+		&booking.Show.Event.EventID,
+		&booking.Show.Event.Title,
+		&booking.Show.Event.Description,
+		&booking.Show.Event.DurationMinutes,
+	)
+
 	if err != nil {
 		return models.BookingDetails{}, err
 	}
+
+	// 2) Fetch seats (multiple rows)
+	rows, err := br.db.QueryContext(ctx, `
+		SELECT
+			ss.id AS show_seat_id,
+			se.id AS seat_id,
+			se.seat_row,
+			se.seat_number
+		FROM booking_seats bs
+		JOIN show_seats ss ON bs.show_seat_id = ss.id
+		JOIN seats se ON ss.seat_id = se.id
+		WHERE bs.booking_id = $1
+		ORDER BY se.seat_row, se.seat_number
+	`, bookingID)
+
+	if err != nil {
+		return models.BookingDetails{}, err
+	}
+	defer rows.Close()
+
+	seats := []models.SeatInfo{}
+
+	for rows.Next() {
+		var seat models.SeatInfo
+		var seatRow string
+		var seatNumber string
+
+		err := rows.Scan(
+			&seat.ShowSeatID,
+			&seat.SeatID,
+			&seatRow,
+			&seatNumber,
+		)
+		if err != nil {
+			return models.BookingDetails{}, err
+		}
+
+		seat.RowLabel = seatRow
+		seat.SeatNo = seatNumber
+
+		seats = append(seats, seat)
+	}
+
+	if err := rows.Err(); err != nil {
+		return models.BookingDetails{}, err
+	}
+
+	booking.Seats = seats
 	return booking, nil
 }
 
