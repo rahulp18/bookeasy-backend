@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/rahulp18/bookeasy-backend/internal/models"
 	"github.com/rahulp18/bookeasy-backend/internal/repository"
 )
 
@@ -27,4 +28,14 @@ func (as *AdminSeatSeedService) SeedShowSeats(ctx context.Context, showID string
 	}
 
 	return as.seedRepo.SeedShowSeats(ctx, showID, rows, seatsPerRow)
+}
+
+func (as *AdminSeatSeedService) GetShowDetails(ctx context.Context, showID string) (models.ShowDetailsRes, error) {
+	return as.seedRepo.GetShowDetails(ctx, showID)
+}
+func (as *AdminSeatSeedService) DeleteShow(ctx context.Context, showID string) error {
+	return as.seedRepo.DeleteShow(ctx, showID)
+}
+func (as *AdminSeatSeedService) UpdateShow(ctx context.Context, showID string, showInput models.ShowUpdateRequest) error {
+	return as.seedRepo.UpdateShow(ctx, showID, showInput)
 }

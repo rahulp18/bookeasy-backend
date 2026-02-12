@@ -25,3 +25,18 @@ func (aes *AdminEventService) CreateEvent(ctx context.Context, e models.Event) (
 	}
 	return aes.eventRepo.CreateEvent(ctx, e)
 }
+
+func (aes *AdminEventService) GetAllEvents(ctx context.Context) ([]models.Event, error) {
+
+	return aes.eventRepo.FetchAllEvents(ctx)
+}
+
+func (aes *AdminEventService) GetEventDetails(ctx context.Context, eventID string) (models.EventDetails, error) {
+	return aes.eventRepo.GetEventDetails(ctx, eventID)
+}
+func (aes *AdminEventService) DeleteEvent(ctx context.Context, eventID string) error {
+	return aes.eventRepo.DeleteEvent(ctx, eventID)
+}
+func (aes *AdminEventService) UpdateEvent(ctx context.Context, eventID string, eventData models.EventUpdateRequest) error {
+	return aes.eventRepo.UpdateEvent(ctx, eventID, eventData)
+}

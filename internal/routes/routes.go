@@ -30,15 +30,16 @@ func Register(mux *http.ServeMux) {
 	mux.Handle("/profile", middleware.Auth(http.HandlerFunc(handlers.Profile)))
 	mux.HandleFunc("/register", handlers.Register)
 	mux.HandleFunc("/login", handlers.Login)
-	mux.HandleFunc("/events", handlers.EventsHandler)
+
 	// mux.HandleFunc("/seats", handlers.SeatsHandler)
 	mux.HandleFunc("/shows/", seatHandler.SeatIdHandler)
 	// BOOKING ROUTES
 	mux.Handle("/bookings", middleware.Auth(http.HandlerFunc(bookingHandler.HandleBookings)))
 	mux.Handle("/bookings/", middleware.Auth(http.HandlerFunc(bookingHandler.BookingActions)))
 
-	mux.Handle("/admin/events", middleware.Auth(http.HandlerFunc(eventHandler.CreateEvent)))
+	mux.Handle("/admin/events", middleware.Auth(http.HandlerFunc(eventHandler.HandleEvents)))
+	mux.Handle("/admin/events/", middleware.Auth(http.HandlerFunc(eventHandler.EventActionHandler)))
 	mux.Handle("/admin/shows", middleware.Auth(http.HandlerFunc(showHandler.CreateShow)))
-	mux.HandleFunc("/admin/shows/", adminSeatSeedHandler.SeedShowSeats)
+	mux.Handle("/admin/shows/", middleware.Auth(http.HandlerFunc(adminSeatSeedHandler.HandleShowSeatsRequest)))
 
 }
