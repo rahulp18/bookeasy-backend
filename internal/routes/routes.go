@@ -40,6 +40,6 @@ func Register(mux *http.ServeMux) {
 	mux.Handle("/admin/events", middleware.Auth(http.HandlerFunc(eventHandler.HandleEvents)))
 	mux.Handle("/admin/events/", middleware.Auth(http.HandlerFunc(eventHandler.EventActionHandler)))
 	mux.Handle("/admin/shows", middleware.Auth(http.HandlerFunc(showHandler.CreateShow)))
-	mux.HandleFunc("/admin/shows/", adminSeatSeedHandler.SeedShowSeats)
+	mux.Handle("/admin/shows/", middleware.Auth(http.HandlerFunc(adminSeatSeedHandler.HandleShowSeatsRequest)))
 
 }
